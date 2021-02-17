@@ -29,12 +29,12 @@ end
 veloReader = velodyneFileReader(lidarFileName, 'VLP16');
 
 % Total number of frames
-numberOfFrames = veloReader.NumberOfFrames;
-% numberOfFrames = 500;
+% numberOfFrames = veloReader.NumberOfFrames;
+numberOfFrames = 500;
 
 % Sampling rate
 frameInterval = 1;
- lidarDataSize = ceil(numberOfFrames/frameInterval);
+lidarDataSize = ceil(numberOfFrames/frameInterval);
 
 % Create empty arrays
 ptClouds = pointCloud.empty(0, lidarDataSize);
@@ -48,13 +48,16 @@ for i = 1:frameInterval:numberOfFrames
     lidarTimestamps(ptCloudIndex) = veloReader.Timestamps(i);
 end
 
-% Save lidarData with time stamp
+% Save lidarData with time offset
 timeOffsetSecond = 18; % leap seconds (윤초)
 timeOffset = duration(0, 0, timeOffsetSecond);
 lidarTimestamps = lidarTimestamps + timeOffset;
 
 lidarTimestamps.Format = 'hh:mm:ss.SSSS';
 lidarPointClouds = timetable(lidarTimestamps, ptClouds', 'VariableNames', {'ptClouds'});
+
+% Extract translation offset
+
 
 %% Visualization sample lidar point cloud  
 
@@ -135,16 +138,20 @@ ptCloudDownsampleTrans = pointCloud.empty(0, lidarDataSize);
 for i = 1:lidarDataSize
     
     % Downsampling 
-    ptCloudDownsample = pcdownsample(lidarPointClouds(i, :).ptClouds,'random',0.3);
+    ptCloudDownsample = pcdownsample(lidarPointClouds(i, :).ptClouds,'random',0.1);
 %     ptCloudDownsample = lidarPotintClouds(i, :).ptClouds;
     points = reshape(ptCloudDownsample.Location, [], 3)';
+    
+    % Translation offset - set first pose as frame origin
+    intialPosition = repmat(PoseRTSync(1, :).Position', 1, size(points, 2)); 
 
     % rotation and position
-    rotation = reshape(PoseRTSync(i, :).Rotation, 3, 3);
+    axisRot = [1 0 0; 0 0 -1; 0 1 0];
+    rotation = axisRot' * reshape(PoseRTSync(i, :).Rotation, 3, 3);
     posititon = repmat(PoseRTSync(i, :).Position', 1, size(points, 2)); 
 
     % Transformation
-    pointsTrans =   rotation' * points + posititon;  
+    pointsTrans =   double(rotation' * points) + posititon - intialPosition;  
 
     % Intensity for plotting
     intensity = reshape(ptCloudDownsample.Intensity, 1, []);

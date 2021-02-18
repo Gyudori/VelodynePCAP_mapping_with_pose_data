@@ -1,8 +1,6 @@
 
 %% Visualize pose data in WebMap
 
-
-
 clear all
 close all
 clc

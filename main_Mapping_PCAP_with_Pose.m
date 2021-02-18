@@ -30,7 +30,7 @@ veloReader = velodyneFileReader(lidarFileName, 'VLP16');
 
 % Total number of frames
 % numberOfFrames = veloReader.NumberOfFrames;
-numberOfFrames = 500;
+numberOfFrames = 100;
 
 % Sampling rate
 frameInterval = 1;
@@ -62,9 +62,20 @@ lidarPointClouds = timetable(lidarTimestamps, ptClouds', 'VariableNames', {'ptCl
 %% Visualization sample lidar point cloud  
 
 figure;
-pcshow(lidarPointClouds.ptClouds(2)); 
+pcshow(lidarPointClouds.ptClouds(1)); 
 vis_coord_system ([0 0 0]', eye(3, 3), 10, '');
 title('Point Cloud and Lidar frame axis');
+
+% Preprocess
+for i = 1:numberOfFrames
+    lidarPointClouds.ptClouds(i) = SelectPointFartherThan(lidarPointClouds.ptClouds(i), 1.5);
+end
+
+ptTemp = pointCloud(excludedLoc, 'Intensity', excludedIntensity);
+figure; hold on;
+pcshow(excludedLoc, [1 1 1], 'MarkerSize', 100 );
+
+pcshow(lidarPointClouds.ptClouds(1), 'MarkerSize', 1);
 
 
 %% Pose data read
@@ -138,8 +149,8 @@ ptCloudDownsampleTrans = pointCloud.empty(0, lidarDataSize);
 for i = 1:lidarDataSize
     
     % Downsampling 
-    ptCloudDownsample = pcdownsample(lidarPointClouds(i, :).ptClouds,'random',0.1);
-%     ptCloudDownsample = lidarPotintClouds(i, :).ptClouds;
+%     ptCloudDownsample = pcdownsample(lidarPointClouds(i, :).ptClouds,'random',0.1);
+    ptCloudDownsample = lidarPotintClouds(i, :).ptClouds;
     points = reshape(ptCloudDownsample.Location, [], 3)';
     
     % Translation offset - set first pose as frame origin
@@ -167,15 +178,15 @@ concatPtCloud = pccat(ptCloudDownsampleTrans);
 % Plotting point cloud
 figure; pcshow(concatPtCloud);
 
-% Plotting poses on the point cloud
-figure
-for i = 1:10:lidarDataSize
-    hold on     
-    vis_coord_system (PoseRTSync(i, :).Position', reshape(PoseRTSync(i, :).Rotation, 3, 3)', 10, num2str(i));  
-end
-grid on; axis equal; xlim auto; ylim auto;
-ax = gca;
-ax.Clipping = 'off';
+% % Plotting poses on the point cloud
+% figure
+% for i = 1:10:lidarDataSize
+%     hold on     
+%     vis_coord_system (PoseRTSync(i, :).Position', reshape(PoseRTSync(i, :).Rotation, 3, 3)', 10, num2str(i));  
+% end
+% grid on; axis equal; xlim auto; ylim auto;
+% ax = gca;
+% ax.Clipping = 'off';
 
 
 %% Merging point cloud

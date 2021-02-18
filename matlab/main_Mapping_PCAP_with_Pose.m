@@ -192,11 +192,11 @@ figure; pcshow(concatPtCloud);
 %% Merging point cloud
 
 if region == "Sangam"
-    ouputDir = "./output data/Sangam/";
+    ouputDir = "../output data/Sangam/";
     outputFileName = strcat(ouputDir, "object3d_",  num2str(timeOffsetSecond),  ".ply");
     pcwrite(concatPtCloud,outputFileName,'Encoding','ascii');
 elseif region == "UOS"
-    ouputDir = "./output data/UOS/";
+    ouputDir = "../output data/UOS/";
     outputFileName = strcat(ouputDir, "object3d_",  num2str(timeOffsetSecond),  ".ply");
     pcwrite(concatPtCloud,outputFileName,'Encoding','ascii');
 end

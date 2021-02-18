@@ -14,12 +14,12 @@ region = "Sangam";
 % region = "UOS";
 
 if region == "Sangam"
-    lidarFileName = './input data/Sangam/2020-11-05-10-35-44_Velodyne-VLP-16-Data.pcap';
-    poseFileName = "./input data/Sangam/Sangam_Mission 1.txt";
+    lidarFileName = '../../input data/Sangam/2020-11-05-10-35-44_Velodyne-VLP-16-Data.pcap';
+    poseFileName = "../../input data/Sangam/Sangam_Mission 1.txt";
     
 elseif region == "UOS"
-    lidarFileName = './input data/UOS/2020-10-28-14-17-42_Velodyne-VLP-16-Data.pcap';
-    poseFileName = "./input data/UOS/UOS_Mission 1.txt";
+    lidarFileName = '../../input data/UOS/2020-10-28-14-17-42_Velodyne-VLP-16-Data.pcap';
+    poseFileName = "../../input data/UOS/UOS_Mission 1.txt";
 end
 
 %% Read velodyne pcap file 

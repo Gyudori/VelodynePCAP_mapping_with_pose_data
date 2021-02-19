@@ -1,26 +1,28 @@
 %%%%%%%%%%%%%%%%%%%%%%
 % LIDAR mapping code
 %%%%%%%%%%%%%%%%%%%%%%
-
 clear all
 close all
 clc
 
+addpath('./functions');
+
 % Generate repeatable random variables
 rng(1);
-
 
 %% Choose region of data
 % region = "Sangam";
 region = "UOS";
 
 if region == "Sangam"
-    lidarFileName = '../input data/Sangam/2020-11-05-10-35-44_Velodyne-VLP-16-Data.pcap';
-    poseFileName = "../input data/Sangam/Sangam_Mission 1.txt";
+    inputDir = '../input data/Sangam/';
+    lidarFileName = [inputDir, '2020-11-05-10-35-44_Velodyne-VLP-16-Data.pcap'];
+    poseFileName = [inputDir ,'Sangam_Mission 1.txt'];
     
 elseif region == "UOS"
-    lidarFileName = '../input data/UOS/2020-10-28-14-17-42_Velodyne-VLP-16-Data.pcap';
-    poseFileName = "../input data/UOS/UOS_Mission 1.txt";
+    inputDir = '../input data/UOS/';
+    lidarFileName = [inputDir, '2020-10-28-14-17-42_Velodyne-VLP-16-Data.pcap'];
+    poseFileName = [inputDir, 'UOS_Mission 1.txt'];
 end
 
 %% Read velodyne pcap file 
@@ -56,9 +58,6 @@ lidarTimestamps = lidarTimestamps + timeOffset;
 lidarTimestamps.Format = 'hh:mm:ss.SSSS';
 lidarPointClouds = timetable(lidarTimestamps, ptClouds', 'VariableNames', {'ptClouds'});
 
-% Extract translation offset
-
-
 %% Visualization sample lidar point cloud  
 
 figure;
@@ -70,13 +69,6 @@ title('Point Cloud and Lidar frame axis');
 for i = 1:numberOfFrames
     lidarPointClouds.ptClouds(i) = SelectPointFartherThan(lidarPointClouds.ptClouds(i), 1.5);
 end
-
-ptTemp = pointCloud(excludedLoc, 'Intensity', excludedIntensity);
-figure; hold on;
-pcshow(excludedLoc, [1 1 1], 'MarkerSize', 100 );
-
-pcshow(lidarPointClouds.ptClouds(1), 'MarkerSize', 1);
-
 
 %% Pose data read
 % Pose data format
@@ -95,7 +87,6 @@ Poses = timetable(poseTimestamps, poseData(:, 3), poseData(:, 4), poseData(:, 5)
     poseData(:, 9)*pi/180, poseData(:, 10)*pi/180, poseData(:, 11)*pi/180, 'VariableNames',...
     {'EASTING', 'NORTHING', 'HEIGHT', 'ROLL', 'PITCH', 'HEADING'});
 
-
 % Compute Position and Rotation
 Position = [Poses.EASTING, Poses.NORTHING, Poses.HEIGHT];
 RotationMat = zeros(poseDataSize, 3, 3);
@@ -107,7 +98,6 @@ end
 %% Save rotation and position 
 
 PosesRT = timetable(poseTimestamps, RotationMat, Position, 'VariableNames', {'Rotation', 'Position'});
-
 
 %% Time synchronization
 
@@ -150,7 +140,7 @@ for i = 1:lidarDataSize
     
     % Downsampling 
 %     ptCloudDownsample = pcdownsample(lidarPointClouds(i, :).ptClouds,'random',0.1);
-    ptCloudDownsample = lidarPotintClouds(i, :).ptClouds;
+    ptCloudDownsample = lidarPointClouds(i, :).ptClouds;
     points = reshape(ptCloudDownsample.Location, [], 3)';
     
     % Translation offset - set first pose as frame origin
@@ -169,8 +159,7 @@ for i = 1:lidarDataSize
     ptCloudDownsampleTrans(i) = pointCloud(pointsTrans', 'Intensity', intensity');      
 end
 
-
-%% Plotting - point cloud map
+%% Merging
 
 % Merge point cloud for plotting
 concatPtCloud = pccat(ptCloudDownsampleTrans);
@@ -188,8 +177,7 @@ figure; pcshow(concatPtCloud);
 % ax = gca;
 % ax.Clipping = 'off';
 
-
-%% Merging point cloud
+%% Export point cloud
 
 if region == "Sangam"
     ouputDir = "../output data/Sangam/";
@@ -200,16 +188,6 @@ elseif region == "UOS"
     outputFileName = strcat(ouputDir, "object3d_",  num2str(timeOffsetSecond),  ".ply");
     pcwrite(concatPtCloud,outputFileName,'Encoding','ascii');
 end
-
-
-
-
-
-
-
-
-
-
 
 
 

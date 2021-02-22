@@ -6,7 +6,7 @@
 Dependency: [Matlab](https://kr.mathworks.com/?requestedDomain=) only
 ## Usage
 ### Quick start
-Download data below and run ``main_Mapping_PCAP_with_Pose`` script in ``matlab/``.\
+Download data below and run ``matlab/main_Mapping_PCAP_with_Pose``.\
 **Note: Please make sure to edit _input&output data path_ according to your dataset directory**
 
 ## Data
